@@ -7,12 +7,14 @@ import { Eye, EyeOff } from "lucide-react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { PhoneAuthSection } from "@/components/auth/PhoneAuthSection"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { isFirebaseConfigured } from "@/lib/firebase"
 import { useAuth } from "@/hooks/useAuth"
 import { useFirestore } from "@/hooks/useFirestore"
+import { useAppStore } from "@/store/useAppStore"
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email."),
@@ -23,8 +25,9 @@ type LoginValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
   const router = useRouter()
-  const { user, signInWithEmail, signInWithGoogle, sendResetLink } = useAuth()
+  const { user, authLoading, profile, signInWithEmail, signInWithGoogle, sendResetLink } = useAuth()
   const { refreshUserData } = useFirestore()
+  const dataLoading = useAppStore((state) => state.dataLoading)
   const [submitError, setSubmitError] = useState<string>()
   const [infoMessage, setInfoMessage] = useState<string>()
   const [showPassword, setShowPassword] = useState(false)
@@ -40,14 +43,24 @@ export function LoginForm() {
   })
 
   useEffect(() => {
-    if (user) {
-      router.replace("/dashboard")
+    if (authLoading || dataLoading) {
+      return
     }
-  }, [router, user])
+
+    if (user) {
+      router.replace(profile?.onboardingComplete ? "/dashboard" : "/onboarding")
+    }
+  }, [authLoading, dataLoading, profile?.onboardingComplete, router, user])
 
   async function routeAfterAuth(uid: string) {
-    const data = await refreshUserData(uid)
-    router.replace(data?.profile?.onboardingComplete ? "/dashboard" : "/onboarding")
+    try {
+      const data = await refreshUserData(uid)
+      router.replace(data?.profile?.onboardingComplete ? "/dashboard" : "/onboarding")
+    } catch (error) {
+      console.error("Unable to load Firestore profile after login.", error)
+      setInfoMessage("Signed in. We couldn't load your saved profile yet, so we're sending you to onboarding.")
+      router.replace("/onboarding")
+    }
   }
 
   async function handleGoogleLogin() {
@@ -121,6 +134,8 @@ export function LoginForm() {
           </span>
           Continue with Google
         </Button>
+
+        <PhoneAuthSection mode="login" onSuccess={routeAfterAuth} />
 
         <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-mutedText">
           <span className="stat-line" />

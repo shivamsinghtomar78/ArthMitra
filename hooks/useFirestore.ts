@@ -39,6 +39,11 @@ export function useFirestore() {
       setResults(data.results ?? {})
 
       return data
+    } catch (error) {
+      setProfile(null)
+      setFinancials(null)
+      setResults({})
+      throw error
     } finally {
       setDataLoading(false)
     }

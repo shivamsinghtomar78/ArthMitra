@@ -7,12 +7,14 @@ import { Eye, EyeOff } from "lucide-react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { PhoneAuthSection } from "@/components/auth/PhoneAuthSection"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { isFirebaseConfigured } from "@/lib/firebase"
 import { useAuth } from "@/hooks/useAuth"
 import { useFirestore } from "@/hooks/useFirestore"
+import { useAppStore } from "@/store/useAppStore"
 
 const signupSchema = z.object({
   name: z.string().min(2, "Enter your full name."),
@@ -28,9 +30,11 @@ type SignupValues = z.infer<typeof signupSchema>
 
 export function SignupForm() {
   const router = useRouter()
-  const { user, signInWithGoogle, signUpWithEmail } = useAuth()
+  const { user, authLoading, profile, signInWithGoogle, signUpWithEmail } = useAuth()
   const { refreshUserData } = useFirestore()
+  const dataLoading = useAppStore((state) => state.dataLoading)
   const [submitError, setSubmitError] = useState<string>()
+  const [infoMessage, setInfoMessage] = useState<string>()
   const [showPassword, setShowPassword] = useState(false)
   const [pending, setPending] = useState(false)
 
@@ -50,18 +54,29 @@ export function SignupForm() {
   }, [password])
 
   useEffect(() => {
-    if (user) {
-      router.replace("/dashboard")
+    if (authLoading || dataLoading) {
+      return
     }
-  }, [router, user])
+
+    if (user) {
+      router.replace(profile?.onboardingComplete ? "/dashboard" : "/onboarding")
+    }
+  }, [authLoading, dataLoading, profile?.onboardingComplete, router, user])
 
   async function routeAfterAuth(uid: string) {
-    const data = await refreshUserData(uid)
-    router.replace(data?.profile?.onboardingComplete ? "/dashboard" : "/onboarding")
+    try {
+      const data = await refreshUserData(uid)
+      router.replace(data?.profile?.onboardingComplete ? "/dashboard" : "/onboarding")
+    } catch (error) {
+      console.error("Unable to load Firestore profile after signup.", error)
+      setInfoMessage("Account created. We couldn't load your saved profile yet, so we're sending you to onboarding.")
+      router.replace("/onboarding")
+    }
   }
 
   async function handleGoogleSignup() {
     setSubmitError(undefined)
+    setInfoMessage(undefined)
     setPending(true)
 
     try {
@@ -76,6 +91,7 @@ export function SignupForm() {
 
   async function onSubmit(values: SignupValues) {
     setSubmitError(undefined)
+    setInfoMessage(undefined)
     setPending(true)
 
     try {
@@ -113,6 +129,8 @@ export function SignupForm() {
           </span>
           Continue with Google
         </Button>
+
+        <PhoneAuthSection mode="signup" onSuccess={routeAfterAuth} />
 
         <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-mutedText">
           <span className="stat-line" />
@@ -172,6 +190,11 @@ export function SignupForm() {
           </div>
 
           <ErrorMessage message={submitError} />
+          {infoMessage ? (
+            <div className="rounded-lg border border-brand/20 bg-brandLight px-4 py-3 text-sm text-brand">
+              {infoMessage}
+            </div>
+          ) : null}
 
           <Button type="submit" size="lg" className="w-full" disabled={pending || !isFirebaseConfigured}>
             {pending ? "Creating..." : "Create Account →"}

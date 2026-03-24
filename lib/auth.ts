@@ -1,8 +1,11 @@
 "use client"
 
 import {
+  type ConfirmationResult,
+  type RecaptchaVerifier,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  signInWithPhoneNumber,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -41,6 +44,26 @@ export async function signInWithEmail(email: string, password: string) {
 
   await ensureFirebasePersistence()
   const credential = await signInWithEmailAndPassword(firebaseAuth, email, password)
+  return credential.user
+}
+
+export async function sendPhoneVerificationCode(
+  phoneNumber: string,
+  verifier: RecaptchaVerifier
+): Promise<ConfirmationResult> {
+  if (!firebaseAuth) {
+    throw new Error("Firebase Auth is not configured.")
+  }
+
+  await ensureFirebasePersistence()
+  return signInWithPhoneNumber(firebaseAuth, phoneNumber, verifier)
+}
+
+export async function verifyPhoneCode(
+  confirmationResult: ConfirmationResult,
+  verificationCode: string
+) {
+  const credential = await confirmationResult.confirm(verificationCode)
   return credential.user
 }
 

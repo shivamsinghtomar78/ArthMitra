@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${dmSans.variable} font-sans antialiased`}>
         <AuthProvider>{children}</AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

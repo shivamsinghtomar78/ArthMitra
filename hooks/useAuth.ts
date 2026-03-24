@@ -3,10 +3,12 @@
 import { useAppStore } from "@/store/useAppStore"
 import {
   sendResetLink,
+  sendPhoneVerificationCode,
   signInWithEmail,
   signInWithGoogle,
   signOutCurrentUser,
   signUpWithEmail,
+  verifyPhoneCode,
 } from "@/lib/auth"
 
 export function useAuth() {
@@ -22,6 +24,8 @@ export function useAuth() {
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
+    sendPhoneVerificationCode,
+    verifyPhoneCode,
     sendResetLink,
     signOut: signOutCurrentUser,
   }

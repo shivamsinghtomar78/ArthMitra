@@ -26,7 +26,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(user)
       setAuthLoading(false)
-      await refreshUserData(user.uid)
+      try {
+        await refreshUserData(user.uid)
+      } catch (error) {
+        console.error("Unable to load Firestore profile after sign-in.", error)
+      }
     })
 
     return () => unsubscribe()
