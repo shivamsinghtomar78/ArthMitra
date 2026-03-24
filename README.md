@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## ArthMitra
 
-## Getting Started
+ArthMitra is an AI-powered personal finance mentor for Indian users built with Next.js 14, Tailwind CSS, shadcn/ui, Firebase, Groq, Recharts, and Zustand.
 
-First, run the development server:
+## Stack
+
+- Next.js 14 App Router with TypeScript
+- Tailwind CSS + shadcn/ui primitives
+- Firebase Auth + Firestore
+- Groq `llama-3.3-70b-versatile` for AI analysis
+- Recharts for FIRE, tax, health score, and portfolio visuals
+- React Hook Form + Zod for validated auth flows
+
+## Local Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create your local environment file:
+
+```bash
+Copy-Item .env.example .env.local
+```
+
+3. Fill in Firebase and Groq credentials in `.env.local`.
+
+4. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev` starts the local app
+- `npm run build` creates the production build
+- `npm run start` serves the production build
+- `npm run lint` runs ESLint
+- `npm run typecheck` runs TypeScript checks
 
-## Learn More
+## App Areas
 
-To learn more about Next.js, take a look at the following resources:
+- `/` landing page
+- `/auth/login` and `/auth/signup` authentication
+- `/onboarding` 3-step profile setup
+- `/dashboard` main financial command center
+- `/tools/fire` FIRE Path Planner
+- `/tools/tax` Tax Wizard
+- `/tools/health-score` Money Health Score
+- `/tools/mf-xray` MF Portfolio X-Ray
+- `/profile` saved profile and service status
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- AI routes include local deterministic fallbacks when Groq is unavailable.
+- CAMS PDF parsing uses `pdfjs-dist` with a static worker served from `public/pdf.worker.mjs`.
+- The app is designed for Vercel deployment.
