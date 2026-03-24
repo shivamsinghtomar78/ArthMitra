@@ -19,7 +19,16 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 }
 
-export const isFirebaseConfigured = Object.values(firebaseConfig).every(Boolean)
+const requiredFirebaseConfig = {
+  apiKey: firebaseConfig.apiKey,
+  authDomain: firebaseConfig.authDomain,
+  projectId: firebaseConfig.projectId,
+  storageBucket: firebaseConfig.storageBucket,
+  messagingSenderId: firebaseConfig.messagingSenderId,
+  appId: firebaseConfig.appId,
+}
+
+export const isFirebaseConfigured = Object.values(requiredFirebaseConfig).every(Boolean)
 
 let app: FirebaseApp | null = null
 let auth: Auth | null = null
