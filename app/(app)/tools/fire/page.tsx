@@ -59,8 +59,28 @@ export default function FireToolPage() {
         throw new Error("Unable to generate your FIRE plan right now.")
       }
 
-      const payload = (await response.json()) as ApiToolResponse<FireResult>
-      await saveToolResult(user.uid, "fireplan", payload.result)
+      let finalResult: FireResult
+
+      const contentType = response.headers.get("content-type") || ""
+      if (contentType.includes("application/json")) {
+        const payload = (await response.json()) as ApiToolResponse<FireResult>
+        finalResult = payload.result
+      } else {
+        const reader = response.body?.getReader()
+        const decoder = new TextDecoder()
+        let fullText = ""
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            fullText += decoder.decode(value, { stream: true })
+          }
+        }
+        finalResult = JSON.parse(fullText) as FireResult
+      }
+
+      await saveToolResult(user.uid, "fireplan", finalResult)
       toast.success("FIRE plan saved!")
     } catch (submitError) {
       setError(

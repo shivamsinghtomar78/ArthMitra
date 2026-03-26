@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { buildTaxFallback } from "@/lib/ai-fallbacks"
-import { callGroqJSON } from "@/lib/groq"
+import { callGroqJSONWithRetry } from "@/lib/groq"
+import { getCached, setCache } from "@/lib/api-cache"
+import { isRateLimited } from "@/lib/rate-limiter"
+import { taxInputSchema } from "@/lib/api-schemas"
 import type { TaxRequestBody, TaxResult } from "@/types"
 
 const TAX_SYSTEM_PROMPT = `
@@ -40,21 +43,35 @@ Response schema:
 `
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as TaxRequestBody
+  const body = (await request.json()) as TaxRequestBody & { uid?: string }
+  const uid = body.uid || "anonymous"
 
-  if (!body?.userInputs) {
-    return NextResponse.json({ error: "Missing tax inputs." }, { status: 400 })
+  if (isRateLimited(uid)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+  }
+
+  const parsed = taxInputSchema.safeParse(body?.userInputs)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid inputs.", details: parsed.error.format() }, { status: 400 })
+  }
+
+  const cached = getCached<TaxResult>(parsed.data)
+  if (cached) {
+    return NextResponse.json({ result: cached, cached: true, timestamp: new Date().toISOString() })
   }
 
   let result: TaxResult
 
   try {
-    result = await callGroqJSON<TaxResult>({
+    result = await callGroqJSONWithRetry<TaxResult>({
       systemPrompt: TAX_SYSTEM_PROMPT,
-      payload: body.userInputs,
+      payload: parsed.data,
+      maxRetries: 2,
     })
-  } catch {
-    result = buildTaxFallback(body.userInputs)
+    setCache(parsed.data, result)
+  } catch (error) {
+    console.error("Tax API Error:", error)
+    result = buildTaxFallback(parsed.data as TaxRequestBody["userInputs"])
   }
 
   return NextResponse.json({

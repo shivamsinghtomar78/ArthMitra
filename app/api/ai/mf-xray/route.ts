@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { buildMfXrayFallback } from "@/lib/ai-fallbacks"
 import { parseCamsStatementText } from "@/lib/cams-parser"
-import { callGroqJSON } from "@/lib/groq"
+import { callGroqJSONWithRetry } from "@/lib/groq"
+import { getCached, setCache } from "@/lib/api-cache"
+import { isRateLimited } from "@/lib/rate-limiter"
+import { mfXrayInputSchema } from "@/lib/api-schemas"
 import type { ManualFundEntry, MFXrayResult } from "@/types"
 
 const MF_XRAY_PROMPT = `
@@ -41,6 +44,11 @@ export async function POST(request: NextRequest) {
       statementText?: string
     }
   }
+  const uid = body.uid || "anonymous"
+
+  if (isRateLimited(uid)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+  }
 
   const parsedFunds =
     body?.userInputs?.funds?.length
@@ -49,22 +57,33 @@ export async function POST(request: NextRequest) {
         ? parseCamsStatementText(body.userInputs.statementText)
         : []
 
-  if (!parsedFunds.length) {
-    return NextResponse.json({ error: "Missing portfolio data." }, { status: 400 })
+  const payloadToValidate = {
+    funds: parsedFunds,
+    statementName: body?.userInputs?.statementName,
+  }
+
+  const parsed = mfXrayInputSchema.safeParse(payloadToValidate)
+  if (!parsed.success || parsed.data.funds.length === 0) {
+    return NextResponse.json({ error: "Missing or invalid portfolio data." }, { status: 400 })
+  }
+
+  const cached = getCached<MFXrayResult>(parsed.data)
+  if (cached) {
+    return NextResponse.json({ result: cached, cached: true, timestamp: new Date().toISOString() })
   }
 
   let result: MFXrayResult
 
   try {
-    result = await callGroqJSON<MFXrayResult>({
+    result = await callGroqJSONWithRetry<MFXrayResult>({
       systemPrompt: MF_XRAY_PROMPT,
-      payload: {
-        funds: parsedFunds,
-        statementName: body.userInputs.statementName,
-      },
+      payload: parsed.data,
+      maxRetries: 2,
     })
-  } catch {
-    result = buildMfXrayFallback(parsedFunds)
+    setCache(parsed.data, result)
+  } catch (error) {
+    console.error("MF X-Ray API Error:", error)
+    result = buildMfXrayFallback(parsed.data.funds as ManualFundEntry[])
   }
 
   return NextResponse.json({

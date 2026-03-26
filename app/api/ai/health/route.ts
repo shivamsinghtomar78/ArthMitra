@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { buildHealthFallback } from "@/lib/ai-fallbacks"
-import { callGroqJSON } from "@/lib/groq"
+import { callGroqJSONWithRetry } from "@/lib/groq"
+import { getCached, setCache } from "@/lib/api-cache"
+import { isRateLimited } from "@/lib/rate-limiter"
+import { healthInputSchema } from "@/lib/api-schemas"
 import type { HealthAnswer, HealthResult } from "@/types"
 
 const HEALTH_SYSTEM_PROMPT = `
@@ -34,20 +37,34 @@ export async function POST(request: NextRequest) {
       answers: HealthAnswer[]
     }
   }
+  const uid = body.uid || "anonymous"
 
-  if (!body?.userInputs?.answers?.length) {
-    return NextResponse.json({ error: "Missing health answers." }, { status: 400 })
+  if (isRateLimited(uid)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+  }
+
+  const parsed = healthInputSchema.safeParse(body?.userInputs)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid inputs.", details: parsed.error.format() }, { status: 400 })
+  }
+
+  const cached = getCached<HealthResult>(parsed.data)
+  if (cached) {
+    return NextResponse.json({ result: cached, cached: true, timestamp: new Date().toISOString() })
   }
 
   let result: HealthResult
 
   try {
-    result = await callGroqJSON<HealthResult>({
+    result = await callGroqJSONWithRetry<HealthResult>({
       systemPrompt: HEALTH_SYSTEM_PROMPT,
-      payload: body.userInputs,
+      payload: parsed.data,
+      maxRetries: 2,
     })
-  } catch {
-    result = buildHealthFallback(body.userInputs.answers)
+    setCache(parsed.data, result)
+  } catch (error) {
+    console.error("Health API Error:", error)
+    result = buildHealthFallback(parsed.data.answers as unknown as HealthAnswer[])
   }
 
   return NextResponse.json({

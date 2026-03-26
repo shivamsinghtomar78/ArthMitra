@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { buildFireFallback } from "@/lib/ai-fallbacks"
-import { callGroqJSON } from "@/lib/groq"
+import { callGroqStream } from "@/lib/groq"
+import { getCached, setCache } from "@/lib/api-cache"
+import { isRateLimited } from "@/lib/rate-limiter"
+import { fireInputSchema } from "@/lib/api-schemas"
 import type { FireRequestBody, FireResult } from "@/types"
 
 const FIRE_SYSTEM_PROMPT = `
 You are ArthMitra, an expert Indian financial advisor.
-You must respond ONLY in valid JSON format. No markdown, no explanation outside JSON.
+You must respond ONLY in valid JSON format representing the exact schema below. No markdown, no explanation outside JSON.
 All monetary values in Indian Rupees. Use Indian number system (lakhs, crores).
 Be specific, accurate, and actionable. Assume 12% equity returns, 7% debt returns, 6% inflation.
 
@@ -28,47 +31,80 @@ Response schema:
     { "year": 2025, "corpus": number },
     ...for 20 years
   ],
-  "actionSteps": ["step1", "step2", "step3", "step4"],
-  "narrative": "2-3 sentence plain English explanation",
-  "warnings": ["any risk warnings"]
+  "actionSteps": ["step 1", "step 2", "step 3", "step 4"],
+  "narrative": "A 2-3 sentence personalized plain English explanation targeting the user's specific FIRE gap.",
+  "warnings": ["Warning 1", "Warning 2"]
 }
 `
 
-async function generateWithRetry(userInputs: FireRequestBody["userInputs"]) {
-  try {
-    return await callGroqJSON<FireResult>({
-      systemPrompt: FIRE_SYSTEM_PROMPT,
-      payload: userInputs,
-    })
-  } catch {
-    return await callGroqJSON<FireResult>({
-      systemPrompt: FIRE_SYSTEM_PROMPT,
-      payload: userInputs,
-    })
-  }
-}
-
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as FireRequestBody
+  const body = (await request.json()) as FireRequestBody & { uid?: string }
+  const uid = body.uid || "anonymous"
 
-  if (!body?.userInputs) {
-    return NextResponse.json({ error: "Missing FIRE inputs." }, { status: 400 })
+  if (isRateLimited(uid)) {
+    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
   }
 
-  let result: FireResult
+  const parsed = fireInputSchema.safeParse(body?.userInputs)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid FIRE inputs.", details: parsed.error.format() }, { status: 400 })
+  }
+
+  const cached = getCached<FireResult>(parsed.data)
+  if (cached) {
+    return NextResponse.json({ result: cached, cached: true, timestamp: new Date().toISOString() })
+  }
 
   try {
-    result = await generateWithRetry(body.userInputs)
-  } catch {
-    result = buildFireFallback(body.userInputs)
-    result.warnings = [
-      ...result.warnings,
-      "AI response unavailable, so ArthMitra used its built-in FIRE calculator.",
-    ]
-  }
+    const stream = await callGroqStream({
+      systemPrompt: FIRE_SYSTEM_PROMPT,
+      payload: parsed.data,
+      temperature: 0.2,
+    })
 
-  return NextResponse.json({
-    result,
-    timestamp: new Date().toISOString(),
-  })
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        let fullText = ""
+        try {
+          for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content || ""
+            if (text) {
+              fullText += text
+              controller.enqueue(encoder.encode(text))
+            }
+          }
+          controller.close()
+          
+          // Try to safely cache the completed JSON string
+          try {
+            const resultObj = JSON.parse(fullText) as FireResult
+            setCache(parsed.data, resultObj)
+          } catch (e) {
+            console.error("Failed to parse and cache streaming Groq response", e)
+          }
+
+        } catch (streamError) {
+          console.error("Stream error:", streamError)
+          controller.error(streamError)
+        }
+      },
+    })
+
+    return new Response(readable, {
+      headers: {
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    })
+  } catch (error) {
+    console.error("FIRE API Error:", error)
+    const fallback = buildFireFallback(parsed.data)
+    fallback.warnings.push("AI generated response unavailable. Displaying mathematical fallback calculation.")
+    return NextResponse.json({
+      result: fallback,
+      timestamp: new Date().toISOString(),
+    })
+  }
 }
