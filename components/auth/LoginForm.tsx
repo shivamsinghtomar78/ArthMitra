@@ -7,11 +7,15 @@ import { Eye, EyeOff } from "lucide-react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { AuthMethodSwitcher } from "@/components/auth/AuthMethodSwitcher"
 import { PhoneAuthSection } from "@/components/auth/PhoneAuthSection"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { isFirebaseConfigured } from "@/lib/firebase"
+import {
+  isFirebaseConfigured,
+  missingFirebaseConfigKeys,
+} from "@/lib/firebase"
 import { useAuth } from "@/hooks/useAuth"
 import { useFirestore } from "@/hooks/useFirestore"
 import { useAppStore } from "@/store/useAppStore"
@@ -31,6 +35,7 @@ export function LoginForm() {
   const [submitError, setSubmitError] = useState<string>()
   const [infoMessage, setInfoMessage] = useState<string>()
   const [showPassword, setShowPassword] = useState(false)
+  const [authMethod, setAuthMethod] = useState<"email" | "phone">("email")
   const [pending, setPending] = useState(false)
 
   const {
@@ -65,6 +70,7 @@ export function LoginForm() {
 
   async function handleGoogleLogin() {
     setSubmitError(undefined)
+    setInfoMessage(undefined)
     setPending(true)
 
     try {
@@ -117,7 +123,11 @@ export function LoginForm() {
       </div>
 
       {!isFirebaseConfigured ? (
-        <ErrorMessage message="Add your Firebase environment variables in .env.local to enable sign in." />
+        <ErrorMessage
+          message={`Firebase client is not ready. If you just updated .env.local, restart npm run dev.${
+            missingFirebaseConfigKeys.length ? ` Missing: ${missingFirebaseConfigKeys.join(", ")}.` : ""
+          }`}
+        />
       ) : null}
 
       <div className="space-y-5">
@@ -135,61 +145,65 @@ export function LoginForm() {
           Continue with Google
         </Button>
 
-        <PhoneAuthSection mode="login" onSuccess={routeAfterAuth} />
-
-        <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-mutedText">
-          <span className="stat-line" />
-          or
-          <span className="stat-line" />
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-mutedText">
+            Or choose a sign-in method
+          </p>
+          <AuthMethodSwitcher value={authMethod} onChange={setAuthMethod} />
         </div>
 
-        <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-foreground">Email</label>
-            <Input {...register("email")} type="email" placeholder="rahul@example.com" />
-            <p className="text-sm text-danger">{errors.email?.message}</p>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-foreground">Password</label>
-              <button
-                type="button"
-                className="text-xs font-medium uppercase tracking-[0.12em] text-mutedText hover:text-foreground"
-                onClick={handlePasswordReset}
-              >
-                Forgot password?
-              </button>
+        {authMethod === "phone" ? (
+          <PhoneAuthSection mode="login" onSuccess={routeAfterAuth} />
+        ) : (
+          <form className="space-y-5 rounded-lg border border-line bg-white p-5" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-foreground">Email</label>
+              <Input {...register("email")} type="email" placeholder="rahul@example.com" />
+              <p className="text-sm text-danger">{errors.email?.message}</p>
             </div>
-            <div className="relative">
-              <Input
-                {...register("password")}
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="pr-12"
-              />
-              <button
-                type="button"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-mutedText"
-                onClick={() => setShowPassword((current) => !current)}
-              >
-                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-              </button>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-semibold text-foreground">Password</label>
+                <button
+                  type="button"
+                  className="text-xs font-medium uppercase tracking-[0.12em] text-mutedText hover:text-foreground"
+                  onClick={handlePasswordReset}
+                >
+                  Forgot password?
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="pr-12"
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-mutedText"
+                  onClick={() => setShowPassword((current) => !current)}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+              <p className="text-sm text-danger">{errors.password?.message}</p>
             </div>
-            <p className="text-sm text-danger">{errors.password?.message}</p>
-          </div>
 
-          {infoMessage ? (
-            <div className="rounded-lg border border-brand/20 bg-brandLight px-4 py-3 text-sm text-brand">
-              {infoMessage}
-            </div>
-          ) : null}
+            {infoMessage ? (
+              <div className="rounded-lg border border-brand/20 bg-brandLight px-4 py-3 text-sm text-brand">
+                {infoMessage}
+              </div>
+            ) : null}
 
-          <ErrorMessage message={submitError} />
+            <ErrorMessage message={submitError} />
 
-          <Button type="submit" size="lg" className="w-full" disabled={pending || !isFirebaseConfigured}>
-            {pending ? "Logging in..." : "Log in →"}
-          </Button>
-        </form>
+            <Button type="submit" size="lg" className="w-full" disabled={pending || !isFirebaseConfigured}>
+              {pending ? "Logging in..." : "Log in ->"}
+            </Button>
+          </form>
+        )}
       </div>
 
       <div className="space-y-3 text-sm">

@@ -34,7 +34,7 @@ function maskPhoneNumber(phoneNumber: string) {
     return phoneNumber
   }
 
-  return `+${digits.slice(0, 2)} ••••••${digits.slice(-4)}`
+  return `+${digits.slice(0, 2)} ******${digits.slice(-4)}`
 }
 
 export function PhoneAuthSection({
@@ -149,7 +149,7 @@ export function PhoneAuthSection({
   }
 
   return (
-    <div className="space-y-4 rounded-lg border border-line p-5">
+    <div className="space-y-4 rounded-lg border border-line bg-white p-5">
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <span className="inline-flex size-9 items-center justify-center rounded-lg border border-line text-foreground">
