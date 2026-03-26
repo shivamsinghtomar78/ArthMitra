@@ -21,29 +21,29 @@ export default function DashboardPage() {
   const stats = [
     {
       label: "Monthly Surplus",
-      value: monthlySurplus ? formatIndianCurrency(monthlySurplus) : "Run onboarding",
-      hint: monthlySurplus > 0 ? "Available to save and invest" : "Complete your baseline",
-      tone: monthlySurplus > 0 ? "success" : "warning",
+      value: monthlySurplus ? formatIndianCurrency(monthlySurplus) : "—",
+      hint: monthlySurplus > 0 ? "Available to save and invest" : "Complete onboarding to see this",
+      tone: monthlySurplus > 0 ? "success" : "neutral",
     },
     {
       label: "Health Score",
-      value: results.healthScore ? `${results.healthScore.overallScore}/100` : "Pending",
-      hint: results.healthScore?.label || "Run the health score quiz",
-      tone: results.healthScore && results.healthScore.overallScore >= 75 ? "success" : "warning",
+      value: results.healthScore ? `${results.healthScore.overallScore}/100` : "—",
+      hint: results.healthScore?.label || "Take the 5-min quiz →",
+      tone: results.healthScore && results.healthScore.overallScore >= 75 ? "success" : results.healthScore ? "warning" : "neutral",
     },
     {
       label: "FIRE Target Date",
-      value: fireTargetYear ? String(fireTargetYear) : "Pending",
-      hint: results.fireplan ? `${results.fireplan.yearsToFIRE} years away` : "Generate your first plan",
-      tone: fireTargetYear ? "success" : "warning",
+      value: fireTargetYear ? String(fireTargetYear) : "—",
+      hint: results.fireplan ? `${results.fireplan.yearsToFIRE} years away` : "Run the FIRE planner →",
+      tone: fireTargetYear ? "success" : "neutral",
     },
     {
       label: "Est. Tax Savings",
-      value: results.taxAnalysis ? formatIndianCurrency(results.taxAnalysis.taxSaving) : "Pending",
+      value: results.taxAnalysis ? formatIndianCurrency(results.taxAnalysis.taxSaving) : "—",
       hint: results.taxAnalysis
         ? `Best under ${results.taxAnalysis.betterRegime === "old" ? "old" : "new"} regime`
-        : "Compare both regimes",
-      tone: results.taxAnalysis && results.taxAnalysis.taxSaving > 0 ? "success" : "warning",
+        : "Compare both regimes →",
+      tone: results.taxAnalysis && results.taxAnalysis.taxSaving > 0 ? "success" : "neutral",
     },
   ] as const
 

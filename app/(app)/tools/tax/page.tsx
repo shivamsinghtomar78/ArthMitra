@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { TaxForm, type TaxFormValues } from "@/components/tools/tax/TaxForm"
 import { TaxResults } from "@/components/tools/tax/TaxResults"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
@@ -63,6 +64,7 @@ export default function TaxToolPage() {
 
       const payload = (await response.json()) as ApiToolResponse<TaxResult>
       await saveToolResult(user.uid, "taxAnalysis", payload.result)
+      toast.success("Tax analysis saved!")
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "Unable to calculate taxes right now."

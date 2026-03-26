@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { HealthQuiz } from "@/components/tools/health/HealthQuiz"
 import { HealthResults } from "@/components/tools/health/HealthResults"
@@ -149,6 +150,7 @@ export default function HealthScorePage() {
 
       const payload = (await response.json()) as ApiToolResponse<HealthResult>
       await saveToolResult(user.uid, "healthScore", payload.result)
+      toast.success("Health score saved!")
       setResult(payload.result)
     } catch (submitError) {
       setError(

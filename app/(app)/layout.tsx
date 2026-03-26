@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Sidebar } from "@/components/layout/Sidebar"
-import { LoadingSpinner } from "@/components/shared/LoadingSpinner"
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton"
 import { useAppStore } from "@/store/useAppStore"
 
 export default function AppLayout({
@@ -35,8 +35,13 @@ export default function AppLayout({
 
   if (authLoading || dataLoading || !user || !profile?.onboardingComplete) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface">
-        <LoadingSpinner label="Preparing your workspace" />
+      <div className="min-h-screen bg-surface">
+        <Sidebar />
+        <main className="lg:pl-60">
+          <div className="min-h-screen px-6 py-6">
+            <DashboardSkeleton />
+          </div>
+        </main>
       </div>
     )
   }
@@ -50,3 +55,4 @@ export default function AppLayout({
     </div>
   )
 }
+

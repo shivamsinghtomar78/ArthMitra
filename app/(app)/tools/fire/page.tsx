@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { FireForm, type FireFormValues } from "@/components/tools/fire/FireForm"
 import { FireResults } from "@/components/tools/fire/FireResults"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
@@ -60,6 +61,7 @@ export default function FireToolPage() {
 
       const payload = (await response.json()) as ApiToolResponse<FireResult>
       await saveToolResult(user.uid, "fireplan", payload.result)
+      toast.success("FIRE plan saved!")
     } catch (submitError) {
       setError(
         submitError instanceof Error ? submitError.message : "Unable to generate your FIRE plan."

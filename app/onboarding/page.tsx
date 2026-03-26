@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Rocket, Shield, Target } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -14,11 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { CurrencyInput } from "@/components/shared/CurrencyInput"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner"
 import { useAuth } from "@/hooks/useAuth"
 import { useFirestore } from "@/hooks/useFirestore"
-import { parseCurrencyInput } from "@/lib/utils"
 import type { Occupation, RiskProfile } from "@/types"
 import { useAppStore } from "@/store/useAppStore"
 
@@ -201,6 +202,7 @@ export default function OnboardingPage() {
           retirementAge: form.retirementAge,
         },
       })
+      toast.success("Profile saved! Generating your plan...")
       router.replace("/dashboard")
     } catch (submitError) {
       setError(
@@ -312,14 +314,10 @@ export default function OnboardingPage() {
               ].map(([key, label]) => (
                 <div key={key} className="space-y-2">
                   <label className="text-sm font-semibold text-foreground">{label}</label>
-                  <Input
-                    type="text"
-                    value={form[key as keyof typeof form]}
-                    onChange={(event) =>
-                      updateValue(
-                        key as keyof typeof form,
-                        parseCurrencyInput(event.target.value) as never
-                      )
+                  <CurrencyInput
+                    value={form[key as keyof typeof form] as number}
+                    onChange={(val) =>
+                      updateValue(key as keyof typeof form, val as never)
                     }
                   />
                 </div>

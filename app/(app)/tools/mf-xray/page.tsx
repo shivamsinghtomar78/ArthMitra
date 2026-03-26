@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { toast } from "sonner"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { MFResults } from "@/components/tools/mf/MFResults"
 import { MFUpload } from "@/components/tools/mf/MFUpload"
@@ -119,6 +120,7 @@ export default function MFXrayPage() {
 
       const payload = (await response.json()) as ApiToolResponse<MFXrayResult>
       await saveToolResult(user.uid, "mfXray", payload.result)
+      toast.success("Portfolio analysis saved!")
     } catch (submitError) {
       setError(
         submitError instanceof Error
