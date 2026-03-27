@@ -1,9 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { TaxForm, type TaxFormValues } from "@/components/tools/tax/TaxForm"
-import { TaxResults } from "@/components/tools/tax/TaxResults"
+
+const TaxResults = dynamic(
+  () => import("@/components/tools/tax/TaxResults").then((m) => ({ default: m.TaxResults })),
+  { ssr: false }
+)
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { useAppStore } from "@/store/useAppStore"
 import { useFirestore } from "@/hooks/useFirestore"

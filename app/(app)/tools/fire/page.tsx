@@ -1,9 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { FireForm, type FireFormValues } from "@/components/tools/fire/FireForm"
-import { FireResults } from "@/components/tools/fire/FireResults"
+
+const FireResults = dynamic(
+  () => import("@/components/tools/fire/FireResults").then((m) => ({ default: m.FireResults })),
+  { ssr: false }
+)
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { useAppStore } from "@/store/useAppStore"
 import { useFirestore } from "@/hooks/useFirestore"

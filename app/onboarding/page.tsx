@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useDeferredValue, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Rocket, Shield, Target } from "lucide-react"
 import { toast } from "sonner"
@@ -106,6 +106,9 @@ export default function OnboardingPage() {
     riskProfile: financials?.riskProfile || ("moderate" as RiskProfile),
     goals: profile?.goals || ["Retire Early"],
   })
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _deferredForm = useDeferredValue(form)
 
   useEffect(() => {
     if (authLoading) {

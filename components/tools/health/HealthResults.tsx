@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,7 +13,7 @@ function getScoreColor(score: number) {
   return "#16a34a"
 }
 
-export function HealthResults({
+export const HealthResults = React.memo(function HealthResults({
   result,
   onRetake,
 }: {
@@ -141,4 +141,4 @@ export function HealthResults({
       </Card>
     </div>
   )
-}
+})

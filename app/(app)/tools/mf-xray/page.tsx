@@ -1,10 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
-import { MFResults } from "@/components/tools/mf/MFResults"
 import { MFUpload } from "@/components/tools/mf/MFUpload"
+
+const MFResults = dynamic(
+  () => import("@/components/tools/mf/MFResults").then((m) => ({ default: m.MFResults })),
+  { ssr: false }
+)
 import { extractTextFromPdf } from "@/lib/pdf-client"
 import { useAppStore } from "@/store/useAppStore"
 import { useFirestore } from "@/hooks/useFirestore"

@@ -1,10 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { ErrorMessage } from "@/components/shared/ErrorMessage"
 import { HealthQuiz } from "@/components/tools/health/HealthQuiz"
-import { HealthResults } from "@/components/tools/health/HealthResults"
+
+const HealthResults = dynamic(
+  () => import("@/components/tools/health/HealthResults").then((m) => ({ default: m.HealthResults })),
+  { ssr: false }
+)
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner"
 import { useAppStore } from "@/store/useAppStore"
 import { useFirestore } from "@/hooks/useFirestore"

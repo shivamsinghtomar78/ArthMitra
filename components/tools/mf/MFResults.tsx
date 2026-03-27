@@ -1,5 +1,7 @@
 "use client"
 
+import React from "react"
+
 import {
   Bar,
   BarChart,
@@ -25,7 +27,7 @@ import type { MFXrayResult } from "@/types"
 
 const pieColors = ["#16a34a", "#0a0a0a", "#6b7280", "#dcfce7"]
 
-export function MFResults({ result }: { result?: MFXrayResult }) {
+export const MFResults = React.memo(function MFResults({ result }: { result?: MFXrayResult }) {
   if (!result) {
     return (
       <Card className="flex min-h-[720px] items-center justify-center">
@@ -196,4 +198,4 @@ export function MFResults({ result }: { result?: MFXrayResult }) {
       </div>
     </div>
   )
-}
+})

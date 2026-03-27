@@ -1,5 +1,7 @@
 "use client"
 
+import React from "react"
+
 import {
   Bar,
   BarChart,
@@ -21,7 +23,7 @@ import {
 import { formatIndianCurrency } from "@/lib/utils"
 import type { TaxResult } from "@/types"
 
-export function TaxResults({ result }: { result?: TaxResult }) {
+export const TaxResults = React.memo(function TaxResults({ result }: { result?: TaxResult }) {
   if (!result) {
     return (
       <Card className="flex min-h-[720px] items-center justify-center">
@@ -153,4 +155,4 @@ export function TaxResults({ result }: { result?: TaxResult }) {
       </div>
     </div>
   )
-}
+})

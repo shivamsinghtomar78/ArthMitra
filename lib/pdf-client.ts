@@ -2,7 +2,7 @@
 
 export async function extractTextFromPdf(file: File) {
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs")
-  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs"
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`
 
   const data = new Uint8Array(await file.arrayBuffer())
   const document = await pdfjs.getDocument({

@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { motion } from "framer-motion"
 import {
   Area,
@@ -17,7 +18,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { formatIndianCurrency, formatShortCurrency } from "@/lib/utils"
 import type { FireResult } from "@/types"
 
-export function FireResults({ result }: { result?: FireResult }) {
+export const FireResults = React.memo(function FireResults({ result }: { result?: FireResult }) {
   if (!result) {
     return (
       <Card className="flex min-h-[680px] items-center justify-center">
@@ -204,4 +205,4 @@ export function FireResults({ result }: { result?: FireResult }) {
       </motion.div>
     </motion.div>
   )
-}
+})
