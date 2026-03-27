@@ -38,7 +38,7 @@ export function HeroSection() {
             </h1>
             <p className="max-w-2xl text-pretty text-lg leading-8 text-mutedText">
               ArthMitra is the AI financial mentor that 95% of Indians never had.
-              No jargon. No advisor fees. Just clarity.
+              6 tools — FIRE planning, tax optimization, portfolio X-ray, health score, life events, and couple&apos;s planning. No jargon. No advisor fees.
             </p>
           </div>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
