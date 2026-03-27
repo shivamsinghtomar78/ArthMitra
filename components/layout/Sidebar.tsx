@@ -6,11 +6,13 @@ import { usePathname, useRouter } from "next/navigation"
 import {
   Flame,
   HeartPulse,
+  Heart,
   Home,
   LogOut,
   Menu,
   PieChart,
   ReceiptText,
+  Sparkles,
   UserCircle2,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -25,6 +27,8 @@ const navItems = [
   { href: "/tools/tax", label: "Tax Wizard", icon: ReceiptText },
   { href: "/tools/mf-xray", label: "MF X-Ray", icon: PieChart },
   { href: "/tools/health-score", label: "Health Score", icon: HeartPulse },
+  { href: "/tools/life-event", label: "Life Event", icon: Sparkles },
+  { href: "/tools/couples", label: "Couple's Plan", icon: Heart },
   { href: "/profile", label: "Profile", icon: UserCircle2 },
 ]
 

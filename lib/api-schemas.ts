@@ -45,3 +45,30 @@ export const mfXrayInputSchema = z.object({
   statementName: z.string().optional(),
   statementText: z.string().optional(),
 })
+
+/** Life Event Advisor inputs */
+export const lifeEventInputSchema = z.object({
+  event: z.enum(["bonus", "inheritance", "marriage", "new_baby", "job_change", "home_purchase"]),
+  amount: z.number().min(0),
+  currentAge: z.number().min(18).max(80),
+  monthlyIncome: z.number().min(0),
+  existingInvestments: z.number().min(0),
+  riskProfile: z.enum(["conservative", "moderate", "aggressive"]),
+  taxBracket: z.enum(["0%", "5%", "20%", "30%"]),
+})
+
+/** Couple's Money Planner inputs */
+const partnerSchema = z.object({
+  name: z.string().min(1),
+  monthlyIncome: z.number().min(0),
+  employerNPS: z.number().min(0).default(0),
+  existingSIPs: z.number().min(0).default(0),
+  hraClaimed: z.number().min(0).default(0),
+  rentPaid: z.number().min(0).default(0),
+})
+export const couplesInputSchema = z.object({
+  partner1: partnerSchema,
+  partner2: partnerSchema,
+  combinedLoans: z.number().min(0).default(0),
+  jointGoals: z.array(z.string()).min(1),
+})

@@ -144,11 +144,78 @@ export interface MFXrayResult {
   updatedAt?: string
 }
 
+export type LifeEventType =
+  | "bonus"
+  | "inheritance"
+  | "marriage"
+  | "new_baby"
+  | "job_change"
+  | "home_purchase"
+
+export interface LifeEventAction {
+  title: string
+  description: string
+  priority: "immediate" | "within_3_months" | "within_6_months"
+  amount?: number
+}
+
+export interface LifeEventResult {
+  event: LifeEventType
+  eventAmount: number
+  immediateActions: LifeEventAction[]
+  taxImplications: string[]
+  portfolioChanges: Array<{
+    asset: string
+    currentAllocation: number
+    recommendedAllocation: number
+  }>
+  timeline: Array<{
+    month: string
+    action: string
+  }>
+  narrative: string
+  warnings: string[]
+  updatedAt?: string
+}
+
+export interface CouplesPartnerSummary {
+  name: string
+  income: number
+  effectiveTaxRate: number
+  recommendedSIP: number
+  npsOptimal: number
+  hraBenefit: number
+}
+
+export interface CouplesResult {
+  partner1: CouplesPartnerSummary
+  partner2: CouplesPartnerSummary
+  combinedNetWorth: number
+  combinedMonthlyInvestment: number
+  optimizedSplits: Array<{
+    category: string
+    partner1Share: number
+    partner2Share: number
+    reason: string
+  }>
+  insuranceRecommendations: Array<{
+    type: string
+    holder: "partner1" | "partner2" | "both"
+    coverAmount: number
+    reason: string
+  }>
+  recommendations: string[]
+  narrative: string
+  updatedAt?: string
+}
+
 export interface UserResults {
   healthScore?: HealthResult
   fireplan?: FireResult
   taxAnalysis?: TaxResult
   mfXray?: MFXrayResult
+  lifeEvent?: LifeEventResult
+  couplesPlanner?: CouplesResult
 }
 
 export interface UserDocument {
