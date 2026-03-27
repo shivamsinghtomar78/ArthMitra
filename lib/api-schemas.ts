@@ -14,20 +14,35 @@ export const fireInputSchema = z.object({
 
 /** Tax Wizard inputs */
 export const taxInputSchema = z.object({
-  grossIncome: z.number().min(0),
-  deductions80C: z.number().min(0).default(0),
-  deductions80D: z.number().min(0).default(0),
-  deductionsHRA: z.number().min(0).default(0),
-  homeLoanInterest: z.number().min(0).default(0),
-  otherDeductions: z.number().min(0).default(0),
+  annualCTC: z.number().min(0),
+  basicSalaryPercent: z.number().min(20).max(60),
+  hraReceivedMonthly: z.number().min(0).default(0),
+  specialAllowances: z.number().min(0).default(0),
+  bonusAnnual: z.number().min(0).default(0),
+  eightyC: z.number().min(0).default(0),
   npsContribution: z.number().min(0).default(0),
-  regime: z.enum(["compare", "old", "new"]).default("compare"),
+  homeLoanInterest: z.number().min(0).default(0),
+  hraClaimed: z.boolean().default(false),
+  medicalInsurance: z.number().min(0).default(0),
+  educationLoan: z.number().min(0).default(0),
+  ageBracket: z.enum(["<60", "60-80", ">80"]).default("<60"),
+  cityType: z.enum(["metro", "non-metro"]).default("metro"),
 })
 
 /** Health Score answers */
 const healthAnswerSchema = z.object({
-  questionId: z.string(),
-  selectedOption: z.string(),
+  id: z.string().min(1),
+  question: z.string().min(1),
+  answer: z.string().min(1),
+  score: z.number().min(1).max(4),
+  dimension: z.enum([
+    "emergencyFund",
+    "insurance",
+    "investments",
+    "debtHealth",
+    "taxEfficiency",
+    "retirement",
+  ]),
 })
 export const healthInputSchema = z.object({
   answers: z.array(healthAnswerSchema).min(1),

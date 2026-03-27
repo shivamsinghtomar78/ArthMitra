@@ -244,15 +244,43 @@ export interface FireRequestBody {
   }
 }
 
+export type TaxAgeBracket = "<60" | "60-80" | ">80"
+
+export type TaxCityType = "metro" | "non-metro"
+
+export interface TaxUserInputs {
+  annualCTC: number
+  basicSalaryPercent: number
+  hraReceivedMonthly: number
+  specialAllowances: number
+  bonusAnnual: number
+  eightyC: number
+  npsContribution: number
+  homeLoanInterest: number
+  hraClaimed: boolean
+  medicalInsurance: number
+  educationLoan: number
+  ageBracket: TaxAgeBracket
+  cityType: TaxCityType
+}
+
 export interface TaxRequestBody {
   uid: string
-  userInputs: Record<string, number | string | boolean>
+  userInputs: TaxUserInputs
 }
+
+export type HealthDimensionKey =
+  | "emergencyFund"
+  | "insurance"
+  | "investments"
+  | "debtHealth"
+  | "taxEfficiency"
+  | "retirement"
 
 export interface HealthAnswer {
   id: string
   question: string
   answer: string
   score: number
-  dimension: keyof HealthResult["dimensions"]
+  dimension: HealthDimensionKey
 }

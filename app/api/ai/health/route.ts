@@ -4,7 +4,7 @@ import { callGroqJSONWithRetry } from "@/lib/groq"
 import { getCached, setCache } from "@/lib/api-cache"
 import { isRateLimited } from "@/lib/rate-limiter"
 import { healthInputSchema } from "@/lib/api-schemas"
-import type { HealthAnswer, HealthResult } from "@/types"
+import type { HealthResult } from "@/types"
 
 const HEALTH_SYSTEM_PROMPT = `
 You are ArthMitra. Score the user's financial health from 0-100.
@@ -31,12 +31,7 @@ Response schema:
 `
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as {
-    uid: string
-    userInputs: {
-      answers: HealthAnswer[]
-    }
-  }
+  const body = (await request.json()) as { uid?: string; userInputs: unknown }
   const uid = body.uid || "anonymous"
 
   if (isRateLimited(uid)) {
@@ -70,7 +65,7 @@ export async function POST(request: NextRequest) {
     setCache(parsed.data, result)
   } catch (error) {
     console.error("Health API Error:", error)
-    result = buildHealthFallback(parsed.data.answers as unknown as HealthAnswer[])
+    result = buildHealthFallback(parsed.data.answers)
   }
 
   return NextResponse.json({

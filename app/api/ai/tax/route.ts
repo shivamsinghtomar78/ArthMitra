@@ -4,7 +4,7 @@ import { callGroqJSONWithRetry } from "@/lib/groq"
 import { getCached, setCache } from "@/lib/api-cache"
 import { isRateLimited } from "@/lib/rate-limiter"
 import { taxInputSchema } from "@/lib/api-schemas"
-import type { TaxRequestBody, TaxResult } from "@/types"
+import type { TaxResult } from "@/types"
 
 const TAX_SYSTEM_PROMPT = `
 You are ArthMitra, an expert Indian tax advisor for FY 2024-25.
@@ -43,7 +43,7 @@ Response schema:
 `
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as TaxRequestBody & { uid?: string }
+  const body = (await request.json()) as { uid?: string; userInputs: unknown }
   const uid = body.uid || "anonymous"
 
   if (isRateLimited(uid)) {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     setCache(parsed.data, result)
   } catch (error) {
     console.error("Tax API Error:", error)
-    result = buildTaxFallback(parsed.data as TaxRequestBody["userInputs"])
+    result = buildTaxFallback(parsed.data)
   }
 
   return NextResponse.json({

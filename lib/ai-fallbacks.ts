@@ -7,6 +7,7 @@ import type {
   MFXrayResult,
   TaxBreakdown,
   TaxResult,
+  TaxUserInputs,
 } from "@/types"
 import {
   calculateNewRegimeTax,
@@ -135,7 +136,7 @@ function estimateMarginalRate(income: number) {
   return 0
 }
 
-export function buildTaxFallback(input: Record<string, number | string | boolean>): TaxResult {
+export function buildTaxFallback(input: TaxUserInputs): TaxResult {
   const annualCTC = Number(input.annualCTC || 0)
   const hraReceivedMonthly = Number(input.hraReceivedMonthly || 0)
   const bonus = Number(input.bonusAnnual || 0)
