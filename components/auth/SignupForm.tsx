@@ -50,6 +50,7 @@ export function SignupForm() {
     formState: { errors },
   } = useForm<SignupValues>({
     resolver: zodResolver(signupSchema),
+    defaultValues: { name: "", email: "", password: "" },
   })
 
   const password = watch("password", "")

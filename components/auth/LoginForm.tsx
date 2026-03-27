@@ -45,6 +45,7 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
   })
 
   useEffect(() => {
