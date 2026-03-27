@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import type { HealthResult } from "@/types"
@@ -77,17 +78,19 @@ export function HealthResults({
       <Card>
         <CardContent className="space-y-5 p-6">
           <h2 className="text-2xl font-bold text-foreground">6-dimension breakdown</h2>
-          {dimensions.map(([label, score]) => (
+          {dimensions.map(([label, score], index) => (
             <div key={label} className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-bodyText">{label}</span>
                 <span className="font-medium text-foreground">{score}/100</span>
               </div>
-              <div className="h-3 rounded-full bg-line">
-                <div
-                  className="h-3 rounded-full"
+              <div className="h-3 rounded-full bg-line overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${score}%` }}
+                  transition={{ duration: 1, delay: 0.5 + index * 0.15, ease: "easeOut" }}
                   style={{
-                    width: `${score}%`,
                     backgroundColor: getScoreColor(Number(score)),
                   }}
                 />

@@ -1,5 +1,6 @@
 "use client"
 
+import { motion } from "framer-motion"
 import {
   Area,
   AreaChart,
@@ -53,8 +54,19 @@ export function FireResults({ result }: { result?: FireResult }) {
       : "Your current surplus is broadly aligned with the recommended SIP."
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-lg bg-brand px-6 py-6 text-white">
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
+      }}
+      className="space-y-6"
+    >
+      <motion.section
+        variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } }}
+        className="rounded-lg bg-brand px-6 py-6 text-white"
+      >
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Your result</p>
         <h2 className="mt-3 text-4xl font-black tracking-[-0.05em]">
           You can retire at {result.canRetireAtAge}
@@ -62,7 +74,7 @@ export function FireResults({ result }: { result?: FireResult }) {
         <p className="mt-3 text-base leading-8 text-white/85">
           {`${result.yearsToFIRE} years to FIRE if you stay consistent. ${gapMessage}`}
         </p>
-      </section>
+      </motion.section>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {[
@@ -71,115 +83,125 @@ export function FireResults({ result }: { result?: FireResult }) {
           ["Years to FIRE", `${result.yearsToFIRE} years`],
           ["Current Gap", formatIndianCurrency(result.sipGap)],
         ].map(([label, value]) => (
-          <Card key={label}>
-            <CardContent className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">{label}</p>
-              <p className="mt-4 text-3xl font-black tracking-[-0.05em] text-foreground">{value}</p>
-            </CardContent>
-          </Card>
+          <motion.div key={label} variants={{ hidden: { opacity: 0, scale: 0.95 }, show: { opacity: 1, scale: 1, transition: { type: "spring" } } }}>
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">{label}</p>
+                <p className="mt-4 text-3xl font-black tracking-[-0.05em] text-foreground">{value}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-6 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">
-                SIP breakdown
-              </p>
-              <h3 className="text-2xl font-bold text-foreground">Projected corpus growth</h3>
-            </div>
-            <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={result.yearlyProjections}>
-                  <CartesianGrid stroke="#e5e7eb" vertical={false} />
-                  <XAxis dataKey="year" tickLine={false} axisLine={false} />
-                  <YAxis
-                    tickFormatter={(value) => formatShortCurrency(Number(value))}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    formatter={(value) => formatIndianCurrency(Number(value))}
-                    labelFormatter={(label) => `Year ${label}`}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="baselineCorpus"
-                    stroke="#6b7280"
-                    fill="#e5e7eb"
-                    fillOpacity={0.3}
-                    strokeWidth={2}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="corpus"
-                    stroke="#16a34a"
-                    fill="#16a34a"
-                    fillOpacity={0.18}
-                    strokeWidth={3}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-6 space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">
+                  SIP breakdown
+                </p>
+                <h3 className="text-2xl font-bold text-foreground">Projected corpus growth</h3>
+              </div>
+              <div className="h-[320px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={result.yearlyProjections}>
+                    <CartesianGrid stroke="#e5e7eb" vertical={false} />
+                    <XAxis dataKey="year" tickLine={false} axisLine={false} />
+                    <YAxis
+                      tickFormatter={(value) => formatShortCurrency(Number(value))}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      formatter={(value) => formatIndianCurrency(Number(value))}
+                      labelFormatter={(label) => `Year ${label}`}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="baselineCorpus"
+                      stroke="#6b7280"
+                      fill="#e5e7eb"
+                      fillOpacity={0.3}
+                      strokeWidth={2}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="corpus"
+                      stroke="#16a34a"
+                      fill="#16a34a"
+                      fillOpacity={0.18}
+                      strokeWidth={3}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-6 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">
-                Asset allocation
-              </p>
-              <h3 className="text-2xl font-bold text-foreground">Recommended split</h3>
-            </div>
-            <div className="h-[260px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={86}>
-                    {pieData.map((entry) => (
-                      <Cell key={entry.name} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `${value}%`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-3">
-              {pieData.map((item) => (
-                <div key={item.name} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="size-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span>{item.name}</span>
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}>
+          <Card>
+            <CardContent className="p-6">
+              <div className="mb-6 space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">
+                  Asset allocation
+                </p>
+                <h3 className="text-2xl font-bold text-foreground">Recommended split</h3>
+              </div>
+              <div className="h-[260px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={86}>
+                      {pieData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `${value}%`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-3">
+                {pieData.map((item) => (
+                  <div key={item.name} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="size-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span>{item.name}</span>
+                    </div>
+                    <span className="font-medium text-foreground">{item.value}%</span>
                   </div>
-                  <span className="font-medium text-foreground">{item.value}%</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
 
-      <Card className="border-l-4 border-l-brand">
-        <CardContent className="p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">AI narrative</p>
-          <p className="mt-4 text-base leading-8 text-bodyText">{result.narrative}</p>
-        </CardContent>
-      </Card>
+      <motion.div variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
+        <Card className="border-l-4 border-l-brand">
+          <CardContent className="p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-mutedText">AI narrative</p>
+            <p className="mt-4 text-base leading-8 text-bodyText">{result.narrative}</p>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardContent className="space-y-4 p-6">
-          <h3 className="text-2xl font-bold text-foreground">Action steps</h3>
-          <ol className="space-y-3 text-base leading-8 text-bodyText">
-            {result.actionSteps.map((step, index) => (
-              <li key={step} className="flex gap-3">
-                <span className="font-heading text-xl font-bold text-brand">{index + 1}.</span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </CardContent>
-      </Card>
-    </div>
+      <motion.div variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}>
+        <Card>
+          <CardContent className="space-y-4 p-6">
+            <h3 className="text-2xl font-bold text-foreground">Action steps</h3>
+            <ol className="space-y-3 text-base leading-8 text-bodyText">
+              {result.actionSteps.map((step, index) => (
+                <li key={step} className="flex gap-3">
+                  <span className="font-heading text-xl font-bold text-brand">{index + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </motion.div>
   )
 }
