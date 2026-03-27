@@ -40,3 +40,16 @@ if (typeof setInterval !== "undefined") {
     }
   }, 5 * 60_000)
 }
+
+/** Returns how many requests the user has left in the current window. */
+export function getRemainingRequests(uid: string): number {
+  const now = Date.now()
+  const timestamps = (requests.get(uid) || []).filter((t: number) => now - t < WINDOW_MS)
+  return Math.max(0, MAX_REQUESTS - timestamps.length)
+}
+
+/** Clear all rate limit records. Useful for testing. */
+export function clearLimits(): void {
+  requests.clear()
+}
+

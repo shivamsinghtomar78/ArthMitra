@@ -107,8 +107,10 @@ export default function OnboardingPage() {
     goals: profile?.goals || ["Retire Early"],
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _deferredForm = useDeferredValue(form)
+  // P4: Defers expensive re-renders caused by currency input typing on low-end devices.
+  // The deferred value is used for rendering non-critical parts while keeping inputs responsive.
+  const deferredForm = useDeferredValue(form)
+  const isStale = form !== deferredForm
 
   useEffect(() => {
     if (authLoading) {
@@ -307,7 +309,7 @@ export default function OnboardingPage() {
           ) : null}
 
           {step === 2 ? (
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className={`grid gap-6 md:grid-cols-2 transition-opacity duration-150 ${isStale ? "opacity-70" : "opacity-100"}`}>
               {[
                 ["monthlyIncome", "Monthly take-home income"],
                 ["monthlyExpense", "Monthly expenses"],

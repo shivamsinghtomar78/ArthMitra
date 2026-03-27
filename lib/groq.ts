@@ -120,5 +120,3 @@ export async function callGroqStream({
 
   return completion
 }
-
-

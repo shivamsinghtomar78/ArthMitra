@@ -45,3 +45,9 @@ export function setCache<T>(input: unknown, result: T, ttlMs = DEFAULT_TTL_MS): 
     }
   }
 }
+
+/** Clear all cached entries. Useful for testing. */
+export function clearCache(): void {
+  store.clear()
+}
+

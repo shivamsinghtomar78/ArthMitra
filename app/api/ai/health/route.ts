@@ -40,7 +40,13 @@ export async function POST(request: NextRequest) {
   const uid = body.uid || "anonymous"
 
   if (isRateLimited(uid)) {
-    return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": "60", "X-RateLimit-Remaining": "0" },
+      }
+    )
   }
 
   const parsed = healthInputSchema.safeParse(body?.userInputs)

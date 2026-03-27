@@ -4,15 +4,15 @@ import { useState } from "react"
 import dynamic from "next/dynamic"
 import { toast } from "sonner"
 import { FireForm, type FireFormValues } from "@/components/tools/fire/FireForm"
+import { ErrorMessage } from "@/components/shared/ErrorMessage"
+import { useAppStore } from "@/store/useAppStore"
+import { useFirestore } from "@/hooks/useFirestore"
+import type { ApiToolResponse, FireResult } from "@/types"
 
 const FireResults = dynamic(
   () => import("@/components/tools/fire/FireResults").then((m) => ({ default: m.FireResults })),
   { ssr: false }
 )
-import { ErrorMessage } from "@/components/shared/ErrorMessage"
-import { useAppStore } from "@/store/useAppStore"
-import { useFirestore } from "@/hooks/useFirestore"
-import type { ApiToolResponse, FireResult } from "@/types"
 
 export default function FireToolPage() {
   const user = useAppStore((state) => state.user)
