@@ -93,7 +93,10 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({
-    result,
+    result: {
+      ...result,
+      parsedFunds: parsed.data.funds,
+    },
     timestamp: new Date().toISOString(),
   })
 }

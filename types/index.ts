@@ -142,6 +142,7 @@ export interface MFXrayResult {
   recommendations: string[]
   projectedImprovement: number
   updatedAt?: string
+  parsedFunds?: ManualFundEntry[]
 }
 
 export type LifeEventType =
